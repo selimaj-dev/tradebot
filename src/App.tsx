@@ -74,7 +74,7 @@ const Index = () => {
         const candles = parseBinanceKlines(data);
         console.log("Candles:", candles);
         const ai_response = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
+          model: "gemini-2.5-flash-lite",
           contents: `${prompt}\n\nInput:${JSON.stringify(candles)}`,
         });
         console.log("AI Response:", ai_response);
