@@ -32,28 +32,7 @@ const Index = () => {
   };
 
   return (
-    <div className="bg-background w-80 px-2 py-4 space-y-3" key={refreshKey}>
-      {/* Header */}
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-primary to-primary/60 flex items-center justify-center">
-            <span className="font-bold text-xs text-primary-foreground">
-              TA
-            </span>
-          </div>
-          <div>
-            <h1 className="font-bold text-foreground leading-none">
-              TradeAssist
-            </h1>
-            <p className="text-xs text-muted-foreground">AI Trading Signals</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-bullish animate-pulse" />
-          <span className="text-xs text-muted-foreground">Live</span>
-        </div>
-      </div>
-
+    <div className="bg-background w-sm px-2 py-4 space-y-3" key={refreshKey}>
       {/* Price Display */}
       <PriceDisplay
         symbol={tradeData.symbol}

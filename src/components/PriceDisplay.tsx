@@ -16,7 +16,7 @@ export const PriceDisplay = ({
   const isPositive = change >= 0;
 
   return (
-    <div className="glass-card p-4 animate-fade-in">
+    <div className="glass-card px-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary/30 to-primary/10 flex items-center justify-center">
