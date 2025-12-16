@@ -18,13 +18,20 @@ export default function CryptoSelect({
   onSelect,
 }: CryptoSelectProps) {
   const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false); // control popover state
 
   const filteredSymbols = exchangeInfo.filter((symbol) =>
     symbol.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleSelect = (symbol: string) => {
+    onSelect?.(symbol);
+    console.log(`Selected symbol: ${symbol}`);
+    setOpen(false); // close the popover
+  };
+
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <div>{children}</div>
       </PopoverTrigger>
@@ -43,10 +50,7 @@ export default function CryptoSelect({
               <Button
                 variant="ghost"
                 className="w-full justify-start"
-                onClick={() => {
-                  onSelect?.(symbol);
-                  console.log(`Selected symbol: ${symbol}`);
-                }}
+                onClick={() => handleSelect(symbol)}
               >
                 {symbol}
               </Button>
