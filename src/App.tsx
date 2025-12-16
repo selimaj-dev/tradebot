@@ -100,7 +100,7 @@ const Index = () => {
 
   return (
     <div
-      className="dark bg-background w-sm px-2 py-4 space-y-3"
+      className="bg-background w-sm px-2 py-4 space-y-3"
       key={refreshKey}
     >
       {!hasApiKey && <GeminiApiKeyModal onSaved={() => setHasApiKey(true)} />}
