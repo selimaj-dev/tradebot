@@ -77,6 +77,11 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  --bullish: 142 76% 50%;
+  --bearish: 0 84% 60%;
+  --bullish-glow: 142 76% 50%;
+  --bearish-glow: 0 84% 60%;
 }
 
 .dark {
@@ -111,6 +116,11 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  --bullish: 142 76% 50%;
+  --bearish: 0 84% 60%;
+  --bullish-glow: 142 76% 50%;
+  --bearish-glow: 0 84% 60%;
 }
 
 @layer base {
@@ -119,5 +129,23 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .text-bullish {
+    @apply text-[hsl(var(--bullish))];
+  }
+
+  .text-bearish {
+    @apply text-[hsl(var(--bearish))];
+  }
+
+  .bg-bullish {
+    @apply bg-[hsl(var(--bullish))];
+  }
+
+  .bg-bearish {
+    @apply bg-[hsl(var(--bearish))];
   }
 }

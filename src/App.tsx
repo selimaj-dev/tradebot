@@ -32,7 +32,7 @@ const Index = () => {
   };
 
   return (
-    <div className="bg-background w-sm px-2 py-4 space-y-3" key={refreshKey}>
+    <div className="dark bg-background w-sm px-2 py-4 space-y-3" key={refreshKey}>
       {/* Price Display */}
       <PriceDisplay
         symbol={tradeData.symbol}
