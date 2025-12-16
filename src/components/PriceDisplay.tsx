@@ -19,11 +19,18 @@ export const PriceDisplay = ({
     <div className="glass-card px-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary/30 to-primary/10 flex items-center justify-center">
+          {/* <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary/30 to-primary/10 flex items-center justify-center">
             <span className="font-bold text-primary text-sm">
               {symbol.slice(0, 2)}
             </span>
-          </div>
+          </div> */}
+          <img
+            className="w-10 h-10 rounded-xl"
+            src={`https://linx64.github.io/cryptoicon-api/public/icons/${symbol
+              .slice(0, 3)
+              .toLowerCase()}.png`}
+            alt=""
+          />
           <div>
             <p className="font-semibold text-foreground">{symbol}</p>
             <p className="text-xs text-muted-foreground">Crypto</p>
