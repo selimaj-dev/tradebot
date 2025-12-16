@@ -5,10 +5,10 @@ import { TradeSetup } from "@/components/TradeSetup";
 import { MarketStats } from "@/components/MarketStats";
 import { SentimentMeter } from "@/components/SentimentMeter";
 import { ActionButtons } from "@/components/ActionButtons";
-// import { parseBinanceKlines } from "./lib/converter";
+import { parseBinanceKlines } from "./lib/converter";
 import Cookies from "js-cookie";
-// import { GoogleGenAI } from "@google/genai";
-// import prompt from "./lib/prompt";
+import { GoogleGenAI } from "@google/genai";
+import prompt from "./lib/prompt";
 import { GeminiApiKeyModal } from "./components/GeminiApiKeyModal";
 
 export type TradeSignal = {
@@ -30,8 +30,8 @@ export type TradeSignal = {
 
 const Index = () => {
   const [refreshKey, setRefreshKey] = useState(0);
-  const [isLoading, _setIsLoading] = useState(true);
-  const [tradeData, _setTradeData] = useState<TradeSignal>({
+  const [isLoading, setIsLoading] = useState(true);
+  const [tradeData, setTradeData] = useState<TradeSignal>({
     symbol: "Loading...",
     price: NaN,
     change: NaN,
@@ -48,36 +48,51 @@ const Index = () => {
     fearGreedIndex: NaN,
   });
   const [hasApiKey, setHasApiKey] = useState<boolean>(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    if (!mounted) setMounted(true);
+  }, []);
 
   useEffect(() => {
     const apiKey = Cookies.get("gemini_api_key");
     setHasApiKey(Boolean(apiKey));
 
-    // async function fetchTradeData() {
-    //   console.log("API Key:", apiKey);
-    //   const ai = new GoogleGenAI({ apiKey });
-    //   console.log("Google GenAI initialized:", ai);
-    //   try {
-    //     const response = await fetch(
-    //       "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=10"
-    //     );
-    //     const data = await response.json();
-    //     const candles = parseBinanceKlines(data);
-    //     console.log("Candles:", candles);
-    //     const ai_response = await ai.models.generateContent({
-    //       model: "gemini-2.5-flash",
-    //       contents: `${prompt}\n\nInput:${JSON.stringify(candles)}`,
-    //     });
-    //     console.log("AI Response:", ai_response.text);
-    //     setTradeData(data);
-    //   } catch (error) {
-    //     console.error("Error fetching trade data:", error);
-    //   } finally {
-    //     setIsLoading(false);
-    //   }
-    // }
-    // fetchTradeData();
-  }, []);
+    if (!apiKey || !mounted) {
+      return;
+    }
+
+    async function fetchTradeData() {
+      console.log("API Key:", apiKey);
+      const ai = new GoogleGenAI({ apiKey });
+      console.log("Google GenAI initialized:", ai);
+      try {
+        const response = await fetch(
+          "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=10"
+        );
+        const data = await response.json();
+        const candles = parseBinanceKlines(data);
+        console.log("Candles:", candles);
+        const ai_response = await ai.models.generateContent({
+          model: "gemini-2.5-flash",
+          contents: `${prompt}\n\nInput:${JSON.stringify(candles)}`,
+        });
+        console.log("AI Response:", ai_response);
+        if (!ai_response.text) {
+          return;
+        }
+        setTradeData(
+          JSON.parse(
+            ai_response.text.replace(/^```json\s*/, "").replace(/```$/, "")
+          )
+        );
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching trade data:", error);
+      }
+    }
+    fetchTradeData();
+  }, [mounted]);
 
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1);
