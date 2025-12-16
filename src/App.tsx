@@ -10,9 +10,9 @@ import Cookies from "js-cookie";
 import { GoogleGenAI } from "@google/genai";
 import prompt from "./lib/prompt";
 import { GeminiApiKeyModal } from "./components/GeminiApiKeyModal";
+import CryptoSelect from "./components/CryptoSelect";
 
 export type TradeSignal = {
-  symbol: string;
   price: number;
   change: number;
   changePercent: number;
@@ -29,10 +29,10 @@ export type TradeSignal = {
 };
 
 const Index = () => {
+  const [symbol, setSymbol] = useState("BTCUSDT");
   const [refreshKey, setRefreshKey] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [tradeData, setTradeData] = useState<TradeSignal>({
-    symbol: "Loading...",
     price: NaN,
     change: NaN,
     changePercent: NaN,
@@ -58,7 +58,7 @@ const Index = () => {
     const apiKey = Cookies.get("gemini_api_key");
     setHasApiKey(Boolean(apiKey));
 
-    if (!apiKey || !mounted) {
+    if (!apiKey || !mounted || !symbol) {
       return;
     }
 
@@ -68,7 +68,7 @@ const Index = () => {
       console.log("Google GenAI initialized:", ai);
       try {
         const response = await fetch(
-          "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=10"
+          `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1h&limit=10`
         );
         const data = await response.json();
         const candles = parseBinanceKlines(data);
@@ -92,7 +92,7 @@ const Index = () => {
       }
     }
     fetchTradeData();
-  }, [mounted]);
+  }, [mounted, symbol]);
 
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1);
@@ -105,12 +105,14 @@ const Index = () => {
     >
       {!hasApiKey && <GeminiApiKeyModal onSaved={() => setHasApiKey(true)} />}
       {/* Price Display */}
-      <PriceDisplay
-        symbol={tradeData.symbol}
-        price={tradeData.price}
-        change={tradeData.change}
-        changePercent={tradeData.changePercent}
-      />
+      <CryptoSelect onSelect={setSymbol}>
+        <PriceDisplay
+          symbol={symbol}
+          price={tradeData.price}
+          change={tradeData.change}
+          changePercent={tradeData.changePercent}
+        />
+      </CryptoSelect>
 
       {/* Trading Signal */}
       <TradingSignal
