@@ -6,7 +6,8 @@ export const SentimentMeter = ({ fearGreedIndex }: SentimentMeterProps) => {
   const getSentimentLabel = (value: number) => {
     if (value <= 20) return { label: "Extreme Fear", color: "text-bearish" };
     if (value <= 40) return { label: "Fear", color: "text-warning" };
-    if (value <= 60) return { label: "Neutral", color: "text-muted-foreground" };
+    if (value <= 60)
+      return { label: "Neutral", color: "text-muted-foreground" };
     if (value <= 80) return { label: "Greed", color: "text-primary" };
     return { label: "Extreme Greed", color: "text-bullish" };
   };
@@ -15,7 +16,10 @@ export const SentimentMeter = ({ fearGreedIndex }: SentimentMeterProps) => {
   const rotation = (fearGreedIndex / 100) * 180 - 90;
 
   return (
-    <div className="glass-card p-4 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+    <div
+      className="glass-card p-4 animate-fade-in"
+      style={{ animationDelay: "0.3s" }}
+    >
       <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
         Fear & Greed Index
       </h3>
@@ -23,20 +27,11 @@ export const SentimentMeter = ({ fearGreedIndex }: SentimentMeterProps) => {
       <div className="flex items-center justify-center">
         <div className="relative w-32 h-16 overflow-hidden">
           {/* Gauge background */}
-          <div
-            className="absolute inset-0 rounded-t-full"
-            style={{
-              background: `conic-gradient(from 180deg at 50% 100%, 
-                hsl(var(--bearish)) 0deg, 
-                hsl(var(--warning)) 60deg, 
-                hsl(var(--muted)) 90deg, 
-                hsl(var(--primary)) 120deg, 
-                hsl(var(--bullish)) 180deg)`,
-            }}
-          />
+          {/* <div className="absolute inset-0 rounded-t-full bg-linear-to-r from-(--bearish) to-(--bullish)" /> */}
+          <div className="absolute inset-0 rounded-t-full bg-linear-to-r from-primary/5 to-primary/30" />
 
           {/* Gauge inner */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-24 h-12 bg-card rounded-t-full" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-24 h-12 bg-background rounded-t-full" />
 
           {/* Needle */}
           <div

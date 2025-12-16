@@ -22,7 +22,7 @@ const Index = () => {
     takeProfit: 72000,
     volume24h: "$42.3B",
     volatility: "Medium",
-    trend: "Bullish",
+    trend: "Bull",
     momentum: 68,
     fearGreedIndex: 72,
   };

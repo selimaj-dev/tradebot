@@ -30,7 +30,7 @@ export const MarketStats = ({
       icon: Clock,
       label: "Trend",
       value: trend,
-      color: trend === "Bullish" ? "text-bullish" : trend === "Bearish" ? "text-bearish" : "text-muted-foreground",
+      color: trend === "Bull" ? "text-bullish" : trend === "Bear" ? "text-bearish" : "text-muted-foreground",
     },
     {
       icon: Zap,

@@ -78,10 +78,10 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-  --bullish: 142 76% 50%;
-  --bearish: 0 84% 60%;
-  --bullish-glow: 142 76% 50%;
-  --bearish-glow: 0 84% 60%;
+  --bullish: hsl(142 76% 50%);
+  --bearish: hsl(0 84% 60%);
+  --bullish-glow: hsl(142 76% 50%);
+  --bearish-glow: hsl(0 84% 60%);
 }
 
 .dark {
@@ -117,10 +117,10 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 
-  --bullish: 142 76% 50%;
-  --bearish: 0 84% 60%;
-  --bullish-glow: 142 76% 50%;
-  --bearish-glow: 0 84% 60%;
+  --bullish: hsl(142 76% 50%);
+  --bearish: hsl(0 84% 60%);
+  --bullish-glow: hsl(142 76% 50%);
+  --bearish-glow: hsl(0 84% 60%);
 }
 
 @layer base {
@@ -134,18 +134,18 @@
 
 @layer components {
   .text-bullish {
-    @apply text-[hsl(var(--bullish))];
+    @apply text-[var(--bullish)];
   }
 
   .text-bearish {
-    @apply text-[hsl(var(--bearish))];
+    @apply text-[var(--bearish)];
   }
 
   .bg-bullish {
-    @apply bg-[hsl(var(--bullish))];
+    @apply bg-[var(--bullish)];
   }
 
   .bg-bearish {
-    @apply bg-[hsl(var(--bearish))];
+    @apply bg-[var(--bearish)];
   }
 }
