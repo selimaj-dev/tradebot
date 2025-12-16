@@ -5,7 +5,11 @@ import { TradeSetup } from "@/components/TradeSetup";
 import { MarketStats } from "@/components/MarketStats";
 import { SentimentMeter } from "@/components/SentimentMeter";
 import { ActionButtons } from "@/components/ActionButtons";
-import { parseBinanceKlines } from "./lib/converter";
+// import { parseBinanceKlines } from "./lib/converter";
+import Cookies from "js-cookie";
+// import { GoogleGenAI } from "@google/genai";
+// import prompt from "./lib/prompt";
+import { GeminiApiKeyModal } from "./components/GeminiApiKeyModal";
 
 export type TradeSignal = {
   symbol: string;
@@ -26,8 +30,8 @@ export type TradeSignal = {
 
 const Index = () => {
   const [refreshKey, setRefreshKey] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [tradeData, setTradeData] = useState<TradeSignal>({
+  const [isLoading, _setIsLoading] = useState(true);
+  const [tradeData, _setTradeData] = useState<TradeSignal>({
     symbol: "Loading...",
     price: NaN,
     change: NaN,
@@ -43,24 +47,36 @@ const Index = () => {
     momentum: NaN,
     fearGreedIndex: NaN,
   });
+  const [hasApiKey, setHasApiKey] = useState<boolean>(true);
 
   useEffect(() => {
-    async function fetchTradeData() {
-      setIsLoading(true);
-      try {
-        const response = await fetch(
-          "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=10"
-        );
-        const data = await response.json();
-        console.log(parseBinanceKlines(data));
-        // setTradeData(data);
-      } catch (error) {
-        console.error("Error fetching trade data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchTradeData();
+    const apiKey = Cookies.get("gemini_api_key");
+    setHasApiKey(Boolean(apiKey));
+
+    // async function fetchTradeData() {
+    //   console.log("API Key:", apiKey);
+    //   const ai = new GoogleGenAI({ apiKey });
+    //   console.log("Google GenAI initialized:", ai);
+    //   try {
+    //     const response = await fetch(
+    //       "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=10"
+    //     );
+    //     const data = await response.json();
+    //     const candles = parseBinanceKlines(data);
+    //     console.log("Candles:", candles);
+    //     const ai_response = await ai.models.generateContent({
+    //       model: "gemini-2.5-flash",
+    //       contents: `${prompt}\n\nInput:${JSON.stringify(candles)}`,
+    //     });
+    //     console.log("AI Response:", ai_response.text);
+    //     setTradeData(data);
+    //   } catch (error) {
+    //     console.error("Error fetching trade data:", error);
+    //   } finally {
+    //     setIsLoading(false);
+    //   }
+    // }
+    // fetchTradeData();
   }, []);
 
   const handleRefresh = () => {
@@ -72,6 +88,7 @@ const Index = () => {
       className="dark bg-background w-sm px-2 py-4 space-y-3"
       key={refreshKey}
     >
+      {!hasApiKey && <GeminiApiKeyModal onSaved={() => setHasApiKey(true)} />}
       {/* Price Display */}
       <PriceDisplay
         symbol={tradeData.symbol}
