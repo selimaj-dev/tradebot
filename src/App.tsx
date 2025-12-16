@@ -1,38 +1,77 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PriceDisplay } from "@/components/PriceDisplay";
 import { TradingSignal } from "@/components/TradingSignal";
 import { TradeSetup } from "@/components/TradeSetup";
 import { MarketStats } from "@/components/MarketStats";
 import { SentimentMeter } from "@/components/SentimentMeter";
 import { ActionButtons } from "@/components/ActionButtons";
+import { parseBinanceKlines } from "./lib/converter";
+
+export type TradeSignal = {
+  symbol: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  signal: "long" | "short";
+  confidence: number;
+  entryPrice: number;
+  stopLoss: number;
+  takeProfit: number;
+  volume24h: string;
+  volatility: "Low" | "Medium" | "High";
+  trend: "Bull" | "Bear" | "Neutral";
+  momentum: number;
+  fearGreedIndex: number;
+};
 
 const Index = () => {
   const [refreshKey, setRefreshKey] = useState(0);
-
-  // Mock data - in a real app, this would come from an API
-  const tradeData = {
-    symbol: "BTC/USDT",
-    price: 67245.32,
-    change: 1234.56,
-    changePercent: 1.87,
-    signal: "long" as const,
-    confidence: 78,
-    entryPrice: 67245,
-    stopLoss: 65500,
-    takeProfit: 72000,
-    volume24h: "$42.3B",
+  const [isLoading, setIsLoading] = useState(true);
+  const [tradeData, setTradeData] = useState<TradeSignal>({
+    symbol: "Loading...",
+    price: NaN,
+    change: NaN,
+    changePercent: NaN,
+    signal: "short",
+    confidence: NaN,
+    entryPrice: NaN,
+    stopLoss: NaN,
+    takeProfit: NaN,
+    volume24h: "0",
     volatility: "Medium",
-    trend: "Bull",
-    momentum: 68,
-    fearGreedIndex: 72,
-  };
+    trend: "Neutral",
+    momentum: NaN,
+    fearGreedIndex: NaN,
+  });
+
+  useEffect(() => {
+    async function fetchTradeData() {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=10"
+        );
+        const data = await response.json();
+        console.log(parseBinanceKlines(data));
+        // setTradeData(data);
+      } catch (error) {
+        console.error("Error fetching trade data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchTradeData();
+  }, []);
 
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1);
   };
 
   return (
-    <div className="dark bg-background w-sm px-2 py-4 space-y-3" key={refreshKey}>
+    <div
+      className="dark bg-background w-sm px-2 py-4 space-y-3"
+      key={refreshKey}
+    >
       {/* Price Display */}
       <PriceDisplay
         symbol={tradeData.symbol}
@@ -45,6 +84,7 @@ const Index = () => {
       <TradingSignal
         signal={tradeData.signal}
         confidence={tradeData.confidence}
+        loading={isLoading}
       />
 
       {/* Trade Setup */}
