@@ -1,20 +1,25 @@
 import { Copy, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import type { TradeSignal } from "@/App";
 
 interface ActionButtonsProps {
   onRefresh: () => void;
+  symbol: string;
+  tradeData: TradeSignal;
 }
 
-export const ActionButtons = ({ onRefresh }: ActionButtonsProps) => {
+export const ActionButtons = ({
+  onRefresh,
+  symbol,
+  tradeData,
+}: ActionButtonsProps) => {
   const handleCopy = () => {
-    const tradeInfo = `
-Trading Signal: LONG
-Entry: $67,245
-Stop Loss: $65,500
-Take Profit: $72,000
-R:R: 1:2.72
-    `.trim();
+    const tradeInfo = `Symbol: ${symbol}\n${JSON.stringify(
+      tradeData,
+      null,
+      2
+    )}`;
 
     navigator.clipboard.writeText(tradeInfo);
     toast("Trade setup copied to clipboard!");
