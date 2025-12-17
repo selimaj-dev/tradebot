@@ -30,17 +30,28 @@ export default function Index() {
     JSON.parse(Cookies.get("saved_signals") || "[]")
   );
   const apiKey = Cookies.get("gemini_api_key");
-  const [activeTab, setActiveTab] = useState<string>("home");
+  const [activeTab, setActiveTab] = useState<string>(
+    Cookies.get("active_tab") || "home"
+  );
+
+  useEffect(() => {
+    Cookies.set("active_tab", activeTab, { expires: 7 });
+  }, [activeTab]);
 
   useEffect(() => {
     Cookies.set("saved_signals", JSON.stringify(signals), { expires: 7 });
   }, [signals]);
 
   return (
-    <div className="w-sm px-2 py-4 space-y-3">
+    <div className="w-sm h-[600px] px-2 py-4 space-y-3">
       {!apiKey && <GeminiApiKeyModal onSaved={window.location.reload} />}
 
-      <Tabs defaultValue="home" value={activeTab} onValueChange={setActiveTab}>
+      <Tabs
+        defaultValue="home"
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="h-full"
+      >
         <TabsList className="w-max mx-auto">
           <TabsTrigger value="home">
             <HomeIcon />
@@ -71,11 +82,11 @@ export default function Index() {
             </TabsTrigger>
           ))}
         </TabsList>
-        <TabsContent value="home">
-          <div className="w-full h-96 px-10 flex items-center">
+        <TabsContent value="home" className="h-full">
+          <div className="w-full h-full px-10 flex items-center">
             <div className="w-full flex flex-col gap-5">
               <CryptoSelect onSelect={setSymbol}>
-                <div className="w-full bg-linear-to-r from-primary/5 to-primary/10 hover:to-primary/20 transition-colors duration-700 p-3 rounded-xl">
+                <div className="w-full bg-linear-to-r from-primary/2 to-primary/10 hover:to-primary/20 transition-colors duration-700 p-3 rounded-xl">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <img
@@ -97,7 +108,7 @@ export default function Index() {
               </CryptoSelect>
 
               <Button
-                className="border border-primary/5 text-foreground bg-gradient-to-r from-primary/5 to-primary/10 hover:to-primary/20 hover:bg-gradient-to-r transition-colors duration-500"
+                className="border border-primary/5 text-foreground bg-gradient-to-r from-primary/2 to-primary/10 hover:to-primary/20 hover:bg-gradient-to-r transition-colors duration-500"
                 onClick={() => {
                   fetchTradeData(
                     symbol,
@@ -116,16 +127,11 @@ export default function Index() {
           </div>
         </TabsContent>
         {signals.map(([symbol, tradeData], index) => (
-          <TabsContent value={String(index)} key={index}>
+          <TabsContent value={String(index)} key={index} className="my-4">
             <Result symbol={symbol} tradeData={tradeData} />
           </TabsContent>
         ))}
       </Tabs>
-
-      {/* Footer */}
-      <p className="text-center text-xs text-muted-foreground pt-2">
-        Not financial advice. Trade responsibly.
-      </p>
     </div>
   );
 }
