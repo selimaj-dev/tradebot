@@ -1,16 +1,12 @@
 import { useEffect, useState } from "react";
-import { PriceDisplay } from "@/components/PriceDisplay";
-import { TradingSignal } from "@/components/TradingSignal";
-import { TradeSetup } from "@/components/TradeSetup";
-import { MarketStats } from "@/components/MarketStats";
-import { SentimentMeter } from "@/components/SentimentMeter";
-import { ActionButtons } from "@/components/ActionButtons";
-import { parseBinanceKlines } from "./lib/converter";
 import Cookies from "js-cookie";
-import { GoogleGenAI } from "@google/genai";
-import prompt from "./lib/prompt";
 import { GeminiApiKeyModal } from "./components/GeminiApiKeyModal";
 import CryptoSelect from "./components/CryptoSelect";
+import { Button } from "./components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
+import { HomeIcon, XIcon } from "lucide-react";
+import Result from "./components/Result";
+import fetchTradeData from "./lib/fetch-signal";
 
 export type TradeSignal = {
   price: number;
@@ -28,120 +24,103 @@ export type TradeSignal = {
   fearGreedIndex: number;
 };
 
-const Index = () => {
-  const [symbol, setSymbol] = useState("BTCUSDT");
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [tradeData, setTradeData] = useState<TradeSignal>({
-    price: NaN,
-    change: NaN,
-    changePercent: NaN,
-    signal: "short",
-    confidence: NaN,
-    entryPrice: NaN,
-    stopLoss: NaN,
-    takeProfit: NaN,
-    volume24h: "0",
-    volatility: "Medium",
-    trend: "Neutral",
-    momentum: NaN,
-    fearGreedIndex: NaN,
-  });
-  const [hasApiKey, setHasApiKey] = useState<boolean>(true);
-  const [mounted, setMounted] = useState(false);
+export default function Index() {
+  const [symbol, setSymbol] = useState<string>("BTCUSDT");
+  const [signals, setSignals] = useState<[string, TradeSignal][]>(
+    JSON.parse(Cookies.get("saved_signals") || "[]")
+  );
+  const apiKey = Cookies.get("gemini_api_key");
+  const [activeTab, setActiveTab] = useState<string>("home");
 
   useEffect(() => {
-    if (!mounted) setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    const apiKey = Cookies.get("gemini_api_key");
-    setHasApiKey(Boolean(apiKey));
-
-    if (!apiKey || !mounted || !symbol) {
-      return;
-    }
-
-    async function fetchTradeData() {
-      console.log("API Key:", apiKey);
-      const ai = new GoogleGenAI({ apiKey });
-      console.log("Google GenAI initialized:", ai);
-      try {
-        const response = await fetch(
-          `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1h&limit=10`
-        );
-        const data = await response.json();
-        const candles = parseBinanceKlines(data);
-        console.log("Candles:", candles);
-        const ai_response = await ai.models.generateContent({
-          model: "gemini-2.5-flash-lite",
-          contents: `${prompt}\n\nInput:${JSON.stringify(candles)}`,
-        });
-        console.log("AI Response:", ai_response);
-        if (!ai_response.text) {
-          return;
-        }
-        setTradeData(
-          JSON.parse(
-            ai_response.text.replace(/^```json\s*/, "").replace(/```$/, "")
-          )
-        );
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching trade data:", error);
-      }
-    }
-    fetchTradeData();
-  }, [mounted, symbol]);
-
-  const handleRefresh = () => {
-    setRefreshKey((prev) => prev + 1);
-  };
+    Cookies.set("saved_signals", JSON.stringify(signals), { expires: 7 });
+  }, [signals]);
 
   return (
-    <div
-      className="bg-background w-sm px-2 py-4 space-y-3"
-      key={refreshKey}
-    >
-      {!hasApiKey && <GeminiApiKeyModal onSaved={() => setHasApiKey(true)} />}
-      {/* Price Display */}
-      <CryptoSelect onSelect={setSymbol}>
-        <PriceDisplay
-          symbol={symbol}
-          price={tradeData.price}
-          change={tradeData.change}
-          changePercent={tradeData.changePercent}
-        />
-      </CryptoSelect>
+    <div className="w-sm px-2 py-4 space-y-3">
+      {!apiKey && <GeminiApiKeyModal onSaved={window.location.reload} />}
 
-      {/* Trading Signal */}
-      <TradingSignal
-        signal={tradeData.signal}
-        confidence={tradeData.confidence}
-        loading={isLoading}
-      />
+      <Tabs defaultValue="home" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="w-max mx-auto">
+          <TabsTrigger value="home">
+            <HomeIcon />
+          </TabsTrigger>
+          {signals.map(([symbol, _], index) => (
+            <TabsTrigger value={String(index)} key={index}>
+              {symbol}{" "}
+              <span
+                className="ml-2 cursor-pointer hover:text-red-500"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSignals((s) => {
+                    const newSignals = s.filter((_, i) => i !== index);
 
-      {/* Trade Setup */}
-      <TradeSetup
-        entryPrice={tradeData.entryPrice}
-        stopLoss={tradeData.stopLoss}
-        takeProfit={tradeData.takeProfit}
-        currentPrice={tradeData.price}
-      />
+                    if (activeTab === String(index)) {
+                      const newIndex = index - 1;
+                      setActiveTab(newIndex >= 0 ? String(newIndex) : "home");
+                    } else if (parseInt(activeTab) > index) {
+                      setActiveTab(String(parseInt(activeTab) - 1));
+                    }
 
-      {/* Market Stats & Sentiment */}
-      <div className="grid grid-cols-2 gap-3">
-        <MarketStats
-          volume24h={tradeData.volume24h}
-          volatility={tradeData.volatility}
-          trend={tradeData.trend}
-          momentum={tradeData.momentum}
-        />
-        <SentimentMeter fearGreedIndex={tradeData.fearGreedIndex} />
-      </div>
+                    return newSignals;
+                  });
+                }}
+              >
+                <XIcon className="w-4 h-4" stroke="currentColor" />
+              </span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        <TabsContent value="home">
+          <div className="w-full h-96 px-10 flex items-center">
+            <div className="w-full flex flex-col gap-5">
+              <CryptoSelect onSelect={setSymbol}>
+                <div className="w-full bg-linear-to-r from-primary/5 to-primary/10 hover:to-primary/20 transition-colors duration-700 p-3 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <img
+                        className="w-10 h-10 rounded-xl"
+                        src={`https://linx64.github.io/cryptoicon-api/public/icons/${symbol
+                          .slice(0, 3)
+                          .toLowerCase()}.png`}
+                        alt=""
+                      />
+                      <div>
+                        <p className="font-semibold text-foreground">
+                          {symbol}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Crypto</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CryptoSelect>
 
-      {/* Action Buttons */}
-      <ActionButtons onRefresh={handleRefresh} />
+              <Button
+                className="border border-primary/5 text-foreground bg-gradient-to-r from-primary/5 to-primary/10 hover:to-primary/20 hover:bg-gradient-to-r transition-colors duration-500"
+                onClick={() => {
+                  fetchTradeData(
+                    symbol,
+                    apiKey,
+                    (data) => {
+                      setActiveTab(String(signals.length));
+                      setSignals((s) => [...s, [symbol, data]]);
+                    },
+                    () => {}
+                  );
+                }}
+              >
+                Analyze
+              </Button>
+            </div>
+          </div>
+        </TabsContent>
+        {signals.map(([symbol, tradeData], index) => (
+          <TabsContent value={String(index)} key={index}>
+            <Result symbol={symbol} tradeData={tradeData} />
+          </TabsContent>
+        ))}
+      </Tabs>
 
       {/* Footer */}
       <p className="text-center text-xs text-muted-foreground pt-2">
@@ -149,6 +128,4 @@ const Index = () => {
       </p>
     </div>
   );
-};
-
-export default Index;
+}
